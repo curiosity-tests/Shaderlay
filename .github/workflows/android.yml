@@ -1,4 +1,5 @@
 name: Android CI
+run-name: "Android CI ${{ inputs.leg || github.event_name }} ${{ inputs.racecar_run }}"
 
 on:
   push:
@@ -6,7 +7,23 @@ on:
   pull_request:
     branches: [ "main" ]
 
+  workflow_dispatch:
+    inputs:
+      leg:
+        description: "baseline (uninstrumented) or instrumented (under chalk/curiosity)"
+        type: choice
+        options: [instrumented, baseline]
+        default: baseline
+      profile:
+        description: "CrashOverride chalk profile"
+        type: string
+        default: curiosity-tests-racecar
+      racecar_run:
+        description: "racecar correlation token, echoed into the run name"
+        type: string
+        default: ""
 env:
+  CHALK_ON: ${{ inputs.leg == 'instrumented' }}
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
 
 jobs:
@@ -156,4 +173,3 @@ jobs:
           app/build/reports/lint*
           build/reports/lint*
         if-no-files-found: ignore
-
